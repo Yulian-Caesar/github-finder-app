@@ -1,26 +1,46 @@
 import { createContext, ReactNode, useContext, useReducer } from "react";
 import { githubReducer } from "./GithubReducer";
+import { RepoType } from "../../components/repos/RepoItem";
 
-export type User = {
+export type UserType = {
 	id: number | string;
 	login: string;
 	avatar_url: string;
+	name: string | null;
+	type: string;
+	location: string | null;
+	bio: string | null;
+	blog: string | null;
+	twitter_username: string | null;
+	html_url: string;
+	followers: number;
+	following: number;
+	public_repos: number;
+	public_gists: number;
+	hireable: boolean;
 }
 
 type GithubContextType = {
-	users: User[],
+	users: UserType[],
+	user: UserType | null,
+	repos: RepoType[] | [],
 	isLoading: boolean,
 	searchUsers: (text: string) => void
+	getUser: (login: string) => void
 	clearUsers: () => void
+	getRepos: (login: string) => void
 };
 
 const GithubContext = createContext<GithubContextType | undefined>(undefined);
 
 const GITHUB_URL = import.meta.env.VITE_GITHUB_URL;
 
-export const GithubProvider = ({ children }: { children: ReactNode }) => {
+const GithubProvider = ({ children }: { children: ReactNode }) => {
+
 	const initialState = {
 		users: [],
+		user: null,
+		repos: [],
 		isLoading: false
 	}
 
@@ -33,13 +53,12 @@ export const GithubProvider = ({ children }: { children: ReactNode }) => {
 		const params = new URLSearchParams({
 			q: text
 		})
-
 		try {
 			const res = await fetch(`${GITHUB_URL}/search/users?${params}`);
 			// add token here??
-
 			if (!res.ok) {
-				throw new Error(`Error: ${res.status} ${res.statusText}`);
+				console.log('comething worng')
+				//window.location = '/notfound'
 			}
 			const { items } = await res.json();
 			dispatch({
@@ -48,9 +67,52 @@ export const GithubProvider = ({ children }: { children: ReactNode }) => {
 			})
 		} catch (error) {
 			console.log(error)
-		}
+			//window.location = '/notfound'
+		}	
+	}
 
-		
+	// Get single user
+	const getUser = async (login: string) => {
+		setLoading()
+		try {
+			const res = await fetch(`${GITHUB_URL}/users/${login}`);
+			// add token here??
+			if (!res.ok) {
+				//window.location = '/notfound'
+			}
+			const data = await res.json();
+			dispatch({
+				type: 'GET_USER',
+				payload: data
+			})
+		} catch (error) {
+			console.log(error)
+			//window.location = '/notfound'
+		}	
+	}
+
+	// Get user repos
+	const getRepos = async (login: string) => {
+		setLoading()
+		const params = new URLSearchParams({
+			sort: 'created',
+			per_page: '10'
+		})
+		try {
+			const res = await fetch(`${GITHUB_URL}/users/${login}/repos?${params}`);
+			// add token here??
+			if (!res.ok) {
+				//window.location = '/notfound'
+			}
+			const data = await res.json();
+			dispatch({
+				type: 'GET_REPOS',
+				payload: data
+			})
+		} catch (error) {
+			console.log(error)
+			//window.location = '/notfound'
+		}	
 	}
 
 	const setLoading = () => dispatch({ type: 'SET_LOADING' })
@@ -59,8 +121,12 @@ export const GithubProvider = ({ children }: { children: ReactNode }) => {
 	return <GithubContext.Provider value={{
 		users: state.users,
 		isLoading: state.isLoading,
+		user: state.user,
+		repos: state.repos,
 		searchUsers,
-		clearUsers
+		clearUsers,
+		getUser,
+		getRepos
 	}}>
 		{children}
 	</GithubContext.Provider>

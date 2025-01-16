@@ -1,8 +1,8 @@
 import { Link } from 'react-router';
-import { User } from '../../context/github/GithubContext';
+import { UserType } from '../../context/github/GithubContext';
 
 type UserItemProps = {
-	user: User;
+	user: UserType;
 };
 
 export const UserItem = ({ user: { login, avatar_url } }: UserItemProps) => {
@@ -18,7 +18,7 @@ export const UserItem = ({ user: { login, avatar_url } }: UserItemProps) => {
 				</div>
 				<div>
 					<h2 className="card-title">{login}</h2>
-					<Link to={`/users/${login}`} className='text-base-content text-opacity-40'>Visit Profile</Link>
+					<Link to={`/user/${login}`} className='text-base-content text-opacity-40'>Visit Profile</Link>
 				</div>
 			</div>
 		</div>
