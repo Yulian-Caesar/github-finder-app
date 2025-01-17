@@ -8,12 +8,11 @@ type GithubState = {
 	isLoading: boolean;
 };
 
-type GithubAction =
+export type GithubAction =
 	| { type: 'GET_USERS'; payload: [] }
-	| { type: 'GET_USER'; payload: UserType | null }
-	| { type: 'GET_REPOS'; payload: RepoType[] }
+	| { type: 'GET_USER_AND_REPOS'; payload: { user: UserType, repos: RepoType[]} }
 	| { type: 'CLEAR_USERS'; }
-	| { type: 'SET_LOADING' }
+	| { type: 'SET_LOADING'; }
 
 export const githubReducer = (state: GithubState, action: GithubAction): GithubState => {
 	
@@ -24,21 +23,16 @@ export const githubReducer = (state: GithubState, action: GithubAction): GithubS
 				users: action.payload,
 				isLoading: false
 			}
-		case 'GET_USER':
-			return {
-				...state,
-				user: action.payload,
-				isLoading: false
-			}
 		case 'CLEAR_USERS':
 			return {
 				...state,
 				users: []
 			}
-		case 'GET_REPOS': 
+		case 'GET_USER_AND_REPOS': 
 			return {
 				...state,
-				repos: action.payload,
+				user: action.payload.user,
+				repos: action.payload.repos,
 				isLoading: false
 			}
 		case 'SET_LOADING': 
